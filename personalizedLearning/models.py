@@ -105,7 +105,7 @@ class Parent(models.Model):
         (GUARDIAN, '家长'), # 其他监护人
     )
     user = models.OneToOneField(User, unique=True, related_name='parent')
-    child = models.ManyToManyField(Student, related_name='parent')
+    student = models.ManyToManyField(Student, related_name='parent')
 
     name = models.CharField(blank=True, max_length=255)
 
