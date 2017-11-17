@@ -21,9 +21,10 @@ from personalizedLearning import views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'children', views.ChildViewSet)
-router.register(r'parents', views.ParentViewSet)
-router.register(r'teachers', views.TeacherViewSet)
+router.register(r'student', views.StudentViewSet)
+router.register(r'parent', views.ParentViewSet)
+router.register(r'teacher', views.TeacherViewSet)
+router.register(r'studyclass', views.StudyClassViewSet)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
