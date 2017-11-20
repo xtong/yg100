@@ -24,10 +24,10 @@ router = DefaultRouter()
 router.register(r'student', views.StudentViewSet)
 router.register(r'parent', views.ParentViewSet)
 router.register(r'teacher', views.TeacherViewSet)
-router.register(r'studyclass', views.StudyClassViewSet)
+router.register(r'studyClass', views.StudyClassViewSet)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api-token-auth/', obtain_jwt_token),
-    url(r'^', include(router.urls))
+    url(r'^', include(router.urls)),
 ]

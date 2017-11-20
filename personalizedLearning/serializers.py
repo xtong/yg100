@@ -20,7 +20,7 @@ class TeacherSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Teacher
-        fields = ('id', 'name', 'subject')
+        fields = ('id', 'username', 'subject')
 
 class StudyClassSerializer(serializers.HyperlinkedModelSerializer):
 
@@ -30,3 +30,4 @@ class StudyClassSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Student
         fields = ('id', 'title', 'school', 'is_active', 'teacher', 'student')
+        read_only_fields = ('date_created', 'date_modified')
