@@ -1,25 +1,30 @@
 from django.shortcuts import render
 from rest_framework import permissions
 from rest_framework import viewsets
-from personalizedLearning.models import ChildProfile
-from personalizedLearning.serializers import ChildSerializer
-from personalizedLearning.models import ParentProfile
+from rest_framework.decorators import detail_route
+from personalizedLearning.models import Student
+from personalizedLearning.serializers import StudentSerializer
+from personalizedLearning.models import Parent
 from personalizedLearning.serializers import ParentSerializer
-from personalizedLearning.models import TeacherProfile
+from personalizedLearning.models import Teacher
 from personalizedLearning.serializers import TeacherSerializer
+from personalizedLearning.models import StudyClass
+from personalizedLearning.serializers import StudyClassSerializer
+from personalizedLearning.permissions import IsParentOrReadOnly
 
 # Create your views here.
-class ChildViewSet(viewsets.ModelViewSet):
-    queryset = ChildProfile.objects.all()
-    serializer_class = ChildSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+class StudentViewSet(viewsets.ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
 
 class ParentViewSet(viewsets.ModelViewSet):
-    queryset = ParentProfile.objects.all()
+    queryset = Parent.objects.all()
     serializer_class = ParentSerializer
-    permission_classes = (permissions.IsAuthenticated,)
 
 class TeacherViewSet(viewsets.ModelViewSet):
-    queryset = TeacherProfile.objects.all()
+    queryset = Teacher.objects.all()
     serializer_class = TeacherSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+
+class StudyClassViewSet(viewsets.ModelViewSet):
+    queryset = StudyClass.objects.all()
+    serializer_class = StudyClassSerializer

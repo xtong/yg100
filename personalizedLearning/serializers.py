@@ -1,25 +1,33 @@
 from rest_framework import serializers
-from personalizedLearning.models import ParentProfile
-from personalizedLearning.models import ChildProfile
-from personalizedLearning.models import TeacherProfile
+from personalizedLearning.models import Parent
+from personalizedLearning.models import Student
+from personalizedLearning.models import Teacher
 
-class ChildSerializer(serializers.ModelSerializer):
+class StudentSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
-        model = ChildProfile
+        model = Student
         fields = ('id', 'name', 'gender', 'birth_date', 'birth_province', 'avatar', 'grade', 'bio')
 
 
-class ParentSerializer(serializers.ModelSerializer):
-    children = ChildSerializer(many=True)
+class ParentSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
-        model = ParentProfile
-        fields = ('id', 'name', 'relationship', 'children')
+        model = Parent
+        fields = ('id', 'name', 'relationship')
 
-class TeacherSerializer(serializers.ModelSerializer):
-    children = ChildSerializer(many=True)
+class TeacherSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
-        model = TeacherProfile
-        fields = ('id', 'name', 'subject', 'children')
+        model = Teacher
+        fields = ('id', 'username', 'subject')
+
+class StudyClassSerializer(serializers.HyperlinkedModelSerializer):
+
+    teacher = serializers.HyperlinkedRelatedField(queryset=Teacher.objects.all(), view_name='teacher-detail', many=True)
+    student = serializers.HyperlinkedRelatedField(queryset=Student.objects.all(), view_name='student-detail', many=True)
+
+    class Meta:
+        model = Student
+        fields = ('id', 'title', 'school', 'is_active', 'teacher', 'student')
+        read_only_fields = ('date_created', 'date_modified')
