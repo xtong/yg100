@@ -1,18 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="dc38dc92-9f15-4aee-8be6-1fc3dd145f2d" name="Default" comment="忘记修改child变量名了">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/personalizedLearning/migrations/0001_initial.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/personalizedLearning/migrations/0002_auto_20171117_0638.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/personalizedLearning/migrations/__init__.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/db.sqlite3" afterPath="$PROJECT_DIR$/db.sqlite3" />
+    <list default="true" id="dc38dc92-9f15-4aee-8be6-1fc3dd145f2d" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/personalizedLearning/models.py" afterPath="$PROJECT_DIR$/personalizedLearning/models.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/personalizedLearning/serializers.py" afterPath="$PROJECT_DIR$/personalizedLearning/serializers.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/personalizedLearning/tests.py" afterPath="$PROJECT_DIR$/personalizedLearning/tests.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/yg100/settings.py" afterPath="$PROJECT_DIR$/yg100/settings.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/yg100/urls.py" afterPath="$PROJECT_DIR$/yg100/urls.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -384,7 +374,14 @@
       <option name="project" value="LOCAL" />
       <updated>1510906306107</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="增加了unit test，并且修改了M2M模型">
+      <created>1511168232373</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1511168232373</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -457,7 +454,8 @@
     <MESSAGE value="create children, parent, teacher view" />
     <MESSAGE value="重新修改了model关系，增加了studyclass教室" />
     <MESSAGE value="忘记修改child变量名了" />
-    <option name="LAST_COMMIT_MESSAGE" value="忘记修改child变量名了" />
+    <MESSAGE value="增加了unit test，并且修改了M2M模型" />
+    <option name="LAST_COMMIT_MESSAGE" value="增加了unit test，并且修改了M2M模型" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
