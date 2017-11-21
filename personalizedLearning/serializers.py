@@ -2,6 +2,7 @@ from rest_framework import serializers
 from personalizedLearning.models import Parent
 from personalizedLearning.models import Student
 from personalizedLearning.models import Teacher
+from django.contrib.auth.models import User
 
 class StudentSerializer(serializers.HyperlinkedModelSerializer):
 
@@ -12,15 +13,18 @@ class StudentSerializer(serializers.HyperlinkedModelSerializer):
 
 class ParentSerializer(serializers.HyperlinkedModelSerializer):
 
+    username = serializers.ReadOnlyField(source='parent.username')
     class Meta:
         model = Parent
         fields = ('id', 'name', 'relationship')
 
 class TeacherSerializer(serializers.HyperlinkedModelSerializer):
 
+    user = serializers.ReadOnlyField(source='auth.User')
+
     class Meta:
         model = Teacher
-        fields = ('id', 'username', 'subject')
+        fields = ('user', 'subject')
 
 class StudyClassSerializer(serializers.HyperlinkedModelSerializer):
 

@@ -126,9 +126,8 @@ class Teacher(models.Model):
         (GEOGRAPHY, '地理'),
         (POLITICS, '政治'),
     )
-    user = models.OneToOneField(User, unique=True, related_name='teacher')
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     student = models.ManyToManyField(Student, through='StudyClass')
-    # name = models.CharField(blank=True, max_length=255)
 
     subject = models.SmallIntegerField(choices=SUBJECT_CHOICES, default=MATH)
 
@@ -136,7 +135,7 @@ class Teacher(models.Model):
         db_table = 'teacher'
 
     def __str__(self):
-        return User.username
+        return self.user.username
 
 class StudyClass(models.Model):
     title = models.CharField(blank=True, max_length=64)
