@@ -30,7 +30,9 @@ class TeacherViewSet(viewsets.ModelViewSet):
     permission_classes = (UserPermission,)
 
     def perform_create(self, serializer):
-        user = User.objects.create(username=self.request.data['username'])
+        user = User.objects.create_user(username=self.request.data['username'],
+                                        password=self.request.data['password'],
+                                        email=self.request.data['email'])
         serializer.save(user=user)
 
 class StudyClassViewSet(viewsets.ModelViewSet):

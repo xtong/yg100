@@ -94,7 +94,34 @@ class Student(models.Model):
     birth_province = models.SmallIntegerField(choices=PROVINCE_CHOICES, default=BEIJING)
 
     avatar = models.URLField(blank=True, max_length=255, default='')
-    grade = models.SmallIntegerField(blank=True) # from primary school till high school: 1 ~ 12
+
+    GRADE_1 = 1
+    GRADE_2 = 2
+    GRADE_3 = 3
+    GRADE_4 = 4
+    GRADE_5 = 5
+    GRADE_6 = 6
+    GRADE_7 = 7
+    GRADE_8 = 8
+    GRADE_9 = 9
+    GRADE_10 = 10
+    GRADE_11 = 11
+    GRADE_12 = 12
+    GRADE_CHOICES = (
+        (GRADE_1, '一年级'),
+        (GRADE_2, '二年级'),
+        (GRADE_3, '三年级'),
+        (GRADE_4, '四年级'),
+        (GRADE_5, '五年级'),
+        (GRADE_6, '六年级'),
+        (GRADE_7, '初中一年级'),
+        (GRADE_8, '初中二年级'),
+        (GRADE_9, '初中三年级'),
+        (GRADE_10, '高中一年级'),
+        (GRADE_11, '高中二年级'),
+        (GRADE_12, '高中三年级'),
+    )
+    grade = models.SmallIntegerField(choices=GRADE_CHOICES, default=GRADE_4) # from primary school till high school: 1 ~ 12
     bio = models.TextField(blank=True, max_length=140) # self-introduction
 
     parent = models.ManyToManyField(Parent, through='Guardianship')

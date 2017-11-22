@@ -8,7 +8,7 @@ class StudentSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Student
-        fields = ('id', 'name', 'gender', 'birth_date', 'birth_province', 'avatar', 'grade', 'bio')
+        fields = '__all__'
 
 
 class ParentSerializer(serializers.HyperlinkedModelSerializer):
@@ -18,13 +18,13 @@ class ParentSerializer(serializers.HyperlinkedModelSerializer):
         model = Parent
         fields = ('id', 'name', 'relationship')
 
-class TeacherSerializer(serializers.HyperlinkedModelSerializer):
+class TeacherSerializer(serializers.ModelSerializer):
 
     user = serializers.ReadOnlyField(source='auth.User')
 
     class Meta:
         model = Teacher
-        fields = ('user', 'subject')
+        fields = '__all__'
 
 class StudyClassSerializer(serializers.HyperlinkedModelSerializer):
 

@@ -1,6 +1,9 @@
 from django.test import TestCase
+from django.contrib.auth.models import User
 from rest_framework.test import APIClient
+from rest_framework.test import RequestsClient
 from rest_framework import status
+from rest_framework_jwt import utils
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 
@@ -11,17 +14,36 @@ from .models import Student
 from .models import Parent
 from .models import Guardianship
 
+class YGTestUtils(object):
+
+    def get_auth_client(self, username, password):
+
+        client = APIClient()
+
+        token_data = {'username': username, 'password': password}
+        response = client.post(
+            '/api-token-auth/',
+            token_data,
+            format='json',
+        )
+
+        client.credentials(HTTP_AUTHORIZATION='JWT ' + response.data['token'])
+
+        return client
+
 class TeacherViewTestCase(TestCase):
 
     def setUp(self):
 
         self.client = APIClient()
 
+        admin = User.objects.create_superuser(username='admin', password='password123', email='xtong_seu@hotmail.com')
+
         datalist = list()
-        datalist.append({'username': '张翠花', 'password': '123456', 'subject': Teacher.MATH})
-        datalist.append({'username': '田大刀', 'password': '234567', 'subject': Teacher.CHINESE})
-        datalist.append({'username': 'Cindy', 'password': '345678', 'subject': Teacher.ENGLISH})
-        datalist.append({'username': 'Betty', 'password': '456789', 'subject': Teacher.ENGLISH})
+        datalist.append({'username': '张翠花', 'password': '123456', 'email': 'zhang@yg100.com', 'subject': Teacher.MATH})
+        datalist.append({'username': '田大刀', 'password': '234567', 'email': 'tian@yg100.com', 'subject': Teacher.CHINESE})
+        datalist.append({'username': 'Cindy', 'password': '345678', 'email': 'cindy@yg100.com', 'subject': Teacher.ENGLISH})
+        datalist.append({'username': 'Betty', 'password': '456789', 'email': 'betty@yg100.com', 'subject': Teacher.ENGLISH})
 
         for data in datalist:
             self.response = self.client.post(
@@ -29,30 +51,25 @@ class TeacherViewTestCase(TestCase):
                 data,
                 format='json',
             )
-            self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
 
     def test_get_token(self):
 
-        teacher_data = {'username': 'Jane', 'password': '123456', 'subject': Teacher.ENGLISH}
+        client = APIClient()
 
-        self.response = self.client.post(
-            reverse('teacher-list'),
-            teacher_data,
-            format='json',
-        )
-        self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
-        token_data = {'username': 'Jane', 'password': '123456'}
-        self.response = self.client.post(
+        token_data = {'username': 'Cindy', 'password': '345678'}
+        response = client.post(
             '/api-token-auth/',
             token_data,
             format='json',
         )
-        print(token_data)
-        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+
+        decoded_payload = utils.jwt_decode_handler(response.data['token'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(decoded_payload['username'], token_data['username'])
 
     def test_create_teacher(self):
 
-        teacher_data = {'username': 'Jane', 'password': '123456', 'subject': Teacher.ENGLISH}
+        teacher_data = {'username': 'Jane', 'password': '123456', 'email': 'jane@yg100.com', 'subject': Teacher.ENGLISH}
 
         self.response = self.client.post(
             reverse('teacher-list'),
@@ -63,31 +80,108 @@ class TeacherViewTestCase(TestCase):
 
     def test_get_a_teacher(self):
 
-        teacher = Teacher.objects.get(id=1)
-        response = self.client.get(
-            '/teacher/',
-            kwargs={'pk': teacher.id}, format='json'
+        auth_client = YGTestUtils().get_auth_client(username='张翠花', password='123456')
+
+        response = auth_client.get(
+            reverse('teacher-detail',  kwargs={'pk': 1}),
+            format='json'
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertContains(response, teacher.id)
+        self.assertContains(response, 1)
 
-    def test_update_a_teacher(self):
+    def test_update_a_teacher_by_self(self):
 
-        teacher = Teacher.objects.get(id=2)
-        change_teacher = {'username': '李茉莉'}
-        response = self.client.put(
-            reverse('teacher-detail', kwargs={'pk': teacher.id}),
+        auth_client = YGTestUtils().get_auth_client(username='田大刀', password='234567')
+
+        change_teacher = {'username': '老田'}
+        response = auth_client.put(
+            reverse('teacher-detail', kwargs={'pk': 2}),
             change_teacher, format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_delete_a_teacher(self):
+    def test_delete_a_teacher_by_self(self):
 
-        teacher = Teacher.objects.get(id=3)
-        response = self.client.delete(
-            reverse('teacher-detail', kwargs={'pk': teacher.id}),
+        auth_client = YGTestUtils().get_auth_client(username='Cindy', password='345678')
+
+        response = auth_client.delete(
+            reverse('teacher-detail', kwargs={'pk': 3}),
             format='json',
             follow=True
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_a_teacher_by_admin(self):
+
+        auth_client = YGTestUtils().get_auth_client(username='admin', password='password123')
+
+        response = auth_client.delete(
+            reverse('teacher-detail', kwargs={'pk': 3}),
+            format='json',
+            follow=True
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+class StudentTestCase(TestCase):
+
+    def setUp(self):
+
+        self.client = APIClient()
+
+        students = list()
+        students.append({'name': '王大锤', 'gender': Student.MALE, 'birth_date': '2008-1-10', 'birth_province': Student.JIANGSU})
+        students.append(
+            {'name': '安嘉璐', 'gender': Student.FEMALE, 'birth_date': '2008-11-30', 'birth_province': Student.JIANGSU})
+        students.append(
+            {'name': '余小二', 'gender': Student.MALE, 'birth_date': '2008-10-10', 'birth_province': Student.SHANX})
+        students.append(
+            {'name': '周文涓', 'gender': Student.FEMALE, 'birth_date': '2008-11-10', 'birth_province': Student.BEIJING})
+
+        for student in students:
+            response = self.client.post(
+                reverse('student-list'),
+                student,
+                format='json'
+            )
+
+    def test_create_student(self):
+
+        client = APIClient()
+        student = {'name': '李二冬', 'gender': Student.MALE, 'birth_date': '2008-3-10', 'birth_province': Student.JIANGSU}
+        response = client.post(
+            reverse('student-list'),
+            student,
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_a_student(self):
+
+        client = APIClient()
+        response = client.get(
+            reverse('student-detail', kwargs={'pk': 3}),
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, '余小二')
+
+    def test_update_a_student(self):
+
+        client = APIClient()
+        new_student = {'name': '大胸姐'}
+        response = client.put(
+            reverse('student-detail', kwargs={'pk': 2}),
+            new_student, format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_a_student(self):
+
+        client = APIClient()
+        response = client.delete(
+            reverse('student-detail', kwargs={'pk': 4}),
+            format='json',
+            follow=True,
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
