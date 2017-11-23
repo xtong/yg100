@@ -37,6 +37,10 @@ class YGTestUtils(object):
 
         return admin
 
+    def create_sentinel_student(self):
+
+        Student.objects.get_or_create(name='sentinel', birth_date='1975-12-04')
+
 class TeacherViewTestCase(TestCase):
 
     def setUp(self):
@@ -44,6 +48,7 @@ class TeacherViewTestCase(TestCase):
         self.yg_util = YGTestUtils()
 
         self.yg_util.create_superadmin()
+        self.yg_util.create_sentinel_student()
 
         self.client = APIClient()
 
@@ -136,6 +141,7 @@ class StudentTestCase(TestCase):
 
         self.yg_util = YGTestUtils()
         self.yg_util.create_superadmin()
+        self.yg_util.create_sentinel_student()
 
         self.client = APIClient()
 
@@ -170,7 +176,7 @@ class StudentTestCase(TestCase):
 
         client = APIClient()
         response = client.get(
-            reverse('student-detail', kwargs={'pk': 3}),
+            reverse('student-detail', kwargs={'pk': 4}),
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -181,7 +187,7 @@ class StudentTestCase(TestCase):
         client = APIClient()
         new_student = {'name': '大胸姐', 'birth_date': '2007-11-30'}
         response = client.put(
-            reverse('student-detail', kwargs={'pk': 2}),
+            reverse('student-detail', kwargs={'pk': 3}),
             new_student, format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -202,6 +208,7 @@ class StudyClassTestCase(TestCase):
 
         self.yg_util = YGTestUtils()
         self.yg_util.create_superadmin()
+        self.yg_util.create_sentinel_student()
 
         self.client = APIClient()
 
@@ -272,12 +279,35 @@ class StudyClassTestCase(TestCase):
         student_id_list.append({'student_id': '4'})
         student_id_list.append({'student_id': '5'})
 
-        study_class_id = '1'
+        study_class_title = '四年级2班'
+        study_class_school = '苏杰小学'
+        data = {'school':'苏杰小学', 'title':'四年级2班'}
+        response = client.get(
+            reverse('studyclass-list'),
+            data,
+            format='json'
+        )
+
+        queryset = response.data
+        for query in queryset:
+
+            study_class_data = {'teacher_id': query['teacher_id'],
+                                'student_id': '1',
+                                'title': query['title'],
+                                'school': query['school'],
+                                'is_active': query['is_active']}
+            for student_id in student_id_list:
+                study_class_data['student_id'] = student_id['student_id']
+                response = client.post(
+                    reverse('studyclass-list'),
+                    study_class_data,
+                    format='json'
+                )
+                self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
         response = client.get(
             reverse('studyclass-list'),
             format='json'
         )
-        print(len(response.data))
-        for student_id in student_id_list:
-            pass
-
+        for i in range(len(response.data)):
+            print(response.data[i])
