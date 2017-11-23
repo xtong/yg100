@@ -31,13 +31,21 @@ class YGTestUtils(object):
 
         return client
 
+    def create_superadmin(self):
+
+        admin = User.objects.create_superuser(username='admin', password='password123', email='xtong_seu@hotmail.com')
+
+        return admin
+
 class TeacherViewTestCase(TestCase):
 
     def setUp(self):
 
-        self.client = APIClient()
+        self.yg_util = YGTestUtils()
 
-        admin = User.objects.create_superuser(username='admin', password='password123', email='xtong_seu@hotmail.com')
+        self.yg_util.create_superadmin()
+
+        self.client = APIClient()
 
         datalist = list()
         datalist.append({'username': '张翠花', 'password': '123456', 'email': 'zhang@yg100.com', 'subject': Teacher.MATH})
@@ -80,19 +88,18 @@ class TeacherViewTestCase(TestCase):
 
     def test_get_a_teacher(self):
 
-        auth_client = YGTestUtils().get_auth_client(username='张翠花', password='123456')
+        auth_client = self.yg_util.get_auth_client(username='张翠花', password='123456')
 
         response = auth_client.get(
             reverse('teacher-detail',  kwargs={'pk': 1}),
             format='json'
         )
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertContains(response, 1)
 
     def test_update_a_teacher_by_self(self):
 
-        auth_client = YGTestUtils().get_auth_client(username='田大刀', password='234567')
+        auth_client = self.yg_util.get_auth_client(username='田大刀', password='234567')
 
         change_teacher = {'username': '老田'}
         response = auth_client.put(
@@ -103,7 +110,7 @@ class TeacherViewTestCase(TestCase):
 
     def test_delete_a_teacher_by_self(self):
 
-        auth_client = YGTestUtils().get_auth_client(username='Cindy', password='345678')
+        auth_client = self.yg_util.get_auth_client(username='Cindy', password='345678')
 
         response = auth_client.delete(
             reverse('teacher-detail', kwargs={'pk': 3}),
@@ -114,7 +121,7 @@ class TeacherViewTestCase(TestCase):
 
     def test_delete_a_teacher_by_admin(self):
 
-        auth_client = YGTestUtils().get_auth_client(username='admin', password='password123')
+        auth_client = self.yg_util.get_auth_client(username='admin', password='password123')
 
         response = auth_client.delete(
             reverse('teacher-detail', kwargs={'pk': 3}),
@@ -126,6 +133,9 @@ class TeacherViewTestCase(TestCase):
 class StudentTestCase(TestCase):
 
     def setUp(self):
+
+        self.yg_util = YGTestUtils()
+        self.yg_util.create_superadmin()
 
         self.client = APIClient()
 
@@ -169,7 +179,7 @@ class StudentTestCase(TestCase):
     def test_update_a_student(self):
 
         client = APIClient()
-        new_student = {'name': '大胸姐'}
+        new_student = {'name': '大胸姐', 'birth_date': '2007-11-30'}
         response = client.put(
             reverse('student-detail', kwargs={'pk': 2}),
             new_student, format='json'
@@ -185,3 +195,89 @@ class StudentTestCase(TestCase):
             follow=True,
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+class StudyClassTestCase(TestCase):
+
+    def setUp(self):
+
+        self.yg_util = YGTestUtils()
+        self.yg_util.create_superadmin()
+
+        self.client = APIClient()
+
+        #创建老师账号
+        datalist = list()
+        datalist.append({'username': '张翠花', 'password': '123456', 'email': 'zhang@yg100.com', 'subject': Teacher.MATH})
+        datalist.append(
+            {'username': '田大刀', 'password': '234567', 'email': 'tian@yg100.com', 'subject': Teacher.CHINESE})
+        datalist.append(
+            {'username': 'Cindy', 'password': '345678', 'email': 'cindy@yg100.com', 'subject': Teacher.ENGLISH})
+        datalist.append(
+            {'username': 'Betty', 'password': '456789', 'email': 'betty@yg100.com', 'subject': Teacher.ENGLISH})
+
+        for data in datalist:
+            self.response = self.client.post(
+                reverse('teacher-list'),
+                data,
+                format='json',
+            )
+
+        students = list()
+        students.append(
+            {'name': '王大锤', 'gender': Student.MALE, 'birth_date': '2008-1-10', 'birth_province': Student.JIANGSU})
+        students.append(
+            {'name': '安嘉璐', 'gender': Student.FEMALE, 'birth_date': '2008-11-30', 'birth_province': Student.JIANGSU})
+        students.append(
+            {'name': '余小二', 'gender': Student.MALE, 'birth_date': '2008-10-10', 'birth_province': Student.SHANX})
+        students.append(
+            {'name': '周文涓', 'gender': Student.FEMALE, 'birth_date': '2008-11-10', 'birth_province': Student.BEIJING})
+
+        for student in students:
+            response = self.client.post(
+                reverse('student-list'),
+                student,
+                format='json'
+            )
+
+        study_class_data_list = list()
+        study_class_data_list.append({'title': '四年级2班', 'school': '苏杰小学', 'teacher_id': '1'})
+        study_class_data_list.append({'title': '四年级3班', 'school': '苏杰小学', 'teacher_id': '1'})
+
+        for data in study_class_data_list:
+            self.response = self.client.post(
+                reverse('studyclass-list'),
+                data,
+                format='json'
+            )
+
+    def test_create_a_study_class(self):
+
+        client = APIClient()
+        study_class_data = {'title': '四年级2班', 'school': '苏杰小学', 'teacher_id': '1'}
+        response = client.post(
+            reverse('studyclass-list'),
+            study_class_data,
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_add_new_students(self):
+
+        client = APIClient()
+
+        student_id_list = list()
+        # 1 is reserved for sentinel student when initializing a study class
+        student_id_list.append({'student_id': '2'})
+        student_id_list.append({'student_id': '3'})
+        student_id_list.append({'student_id': '4'})
+        student_id_list.append({'student_id': '5'})
+
+        study_class_id = '1'
+        response = client.get(
+            reverse('studyclass-list'),
+            format='json'
+        )
+        print(len(response.data))
+        for student_id in student_id_list:
+            pass
+

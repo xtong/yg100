@@ -2,6 +2,7 @@ from rest_framework import serializers
 from personalizedLearning.models import Parent
 from personalizedLearning.models import Student
 from personalizedLearning.models import Teacher
+from personalizedLearning.models import StudyClass
 from django.contrib.auth.models import User
 
 class StudentSerializer(serializers.HyperlinkedModelSerializer):
@@ -10,6 +11,14 @@ class StudentSerializer(serializers.HyperlinkedModelSerializer):
         model = Student
         fields = '__all__'
 
+class TeacherSerializer(serializers.ModelSerializer):
+
+    user = serializers.ReadOnlyField(source='auth.User')
+    # student = StudyClassSerializer(source='studyclass_set', many=True)
+
+    class Meta:
+        model = Teacher
+        fields = '__all__'
 
 class ParentSerializer(serializers.HyperlinkedModelSerializer):
 
@@ -18,20 +27,17 @@ class ParentSerializer(serializers.HyperlinkedModelSerializer):
         model = Parent
         fields = ('id', 'name', 'relationship')
 
-class TeacherSerializer(serializers.ModelSerializer):
-
-    user = serializers.ReadOnlyField(source='auth.User')
-
-    class Meta:
-        model = Teacher
-        fields = '__all__'
 
 class StudyClassSerializer(serializers.HyperlinkedModelSerializer):
 
-    teacher = serializers.HyperlinkedRelatedField(queryset=Teacher.objects.all(), view_name='teacher-detail', many=True)
-    student = serializers.HyperlinkedRelatedField(queryset=Student.objects.all(), view_name='student-detail', many=True)
+    teacher_id = serializers.ReadOnlyField(source='teacher.id')
+    student_id = serializers.ReadOnlyField(source='student.id')
+    # teacher = TeacherSerializer(many=True)
+    # student = StudentSerializer(many=True)
 
     class Meta:
-        model = Student
-        fields = ('id', 'title', 'school', 'is_active', 'teacher', 'student')
-        read_only_fields = ('date_created', 'date_modified')
+        model = StudyClass
+        fields = ('id', 'title', 'school', 'is_active', 'date_created', 'date_modified', 'teacher_id', 'student_id')
+        # fields = ('id', 'title', 'school', 'is_active', 'teacher_id', 'student', 'date_created', 'date_modified')
+
+

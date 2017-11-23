@@ -153,8 +153,8 @@ class Teacher(models.Model):
         (GEOGRAPHY, '地理'),
         (POLITICS, '政治'),
     )
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    student = models.ManyToManyField(Student, through='StudyClass')
+    user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
+    student = models.ManyToManyField('Student', through='StudyClass')
 
     subject = models.SmallIntegerField(choices=SUBJECT_CHOICES, default=MATH)
 
@@ -171,8 +171,8 @@ class StudyClass(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE)
+    student = models.ForeignKey('Student', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'study_class'

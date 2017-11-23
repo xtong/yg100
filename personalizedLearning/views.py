@@ -16,10 +16,12 @@ from personalizedLearning.serializers import StudyClassSerializer
 
 # Create your views here.
 class StudentViewSet(viewsets.ModelViewSet):
+
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
 class ParentViewSet(viewsets.ModelViewSet):
+
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
 
@@ -38,3 +40,13 @@ class TeacherViewSet(viewsets.ModelViewSet):
 class StudyClassViewSet(viewsets.ModelViewSet):
     queryset = StudyClass.objects.all()
     serializer_class = StudyClassSerializer
+
+    def perform_create(self, serializer):
+        # 创建一个缺省的假用户，否则无法创建对应的关系
+        student_sentinel = Student.objects.get_or_create(name='sentinel', birth_date='1975-12-04')
+        # student_serializer = StudentSerializer(instance=student_sentinel[0])
+
+        teacher = Teacher.objects.get(id=self.request.data['teacher_id'])
+        # teacher_serializer = TeacherSerializer(instance=teacher)
+
+        serializer.save(student_id = student_sentinel[0].id, teacher_id = teacher.id)
