@@ -279,12 +279,10 @@ class StudyClassTestCase(TestCase):
         student_id_list.append({'student_id': '4'})
         student_id_list.append({'student_id': '5'})
 
-        study_class_title = '四年级2班'
-        study_class_school = '苏杰小学'
-        data = {'school':'苏杰小学', 'title':'四年级2班'}
+        query_filter_data = {'school':'苏杰小学', 'title':'四年级2班'}
         response = client.get(
             reverse('studyclass-list'),
-            data,
+            query_filter_data,
             format='json'
         )
 
@@ -304,10 +302,91 @@ class StudyClassTestCase(TestCase):
                     format='json'
                 )
                 self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
         response = client.get(
             reverse('studyclass-list'),
+            query_filter_data,
+            format='json',
+        )
+        self.assertEqual(len(response.data), 5)
+
+    def test_add_new_teachers(self):
+
+        client = APIClient()
+
+        teacher_id_list = list()
+        # 1 is reserved for sentinel student when initializing a study class
+        teacher_id_list.append({'teacher_id': '1'})
+        teacher_id_list.append({'teacher_id': '2'})
+        teacher_id_list.append({'teacher_id': '3'})
+        teacher_id_list.append({'teacher_id': '4'})
+
+        query_filter_data = {'school': '苏杰小学', 'title': '四年级2班'}
+        response = client.get(
+            reverse('studyclass-list'),
+            query_filter_data,
             format='json'
         )
-        for i in range(len(response.data)):
-            print(response.data[i])
+
+        queryset = response.data
+        for query in queryset:
+
+            teacher_class_data = {'teacher_id': '1',
+                                'student_id': query['student_id'],
+                                'title': query['title'],
+                                'school': query['school'],
+                                'is_active': query['is_active']}
+            for teacher_id in teacher_id_list:
+                teacher_class_data['teacher_id'] = teacher_id['teacher_id']
+                response = client.post(
+                    reverse('studyclass-list'),
+                    teacher_class_data,
+                    format='json'
+                )
+                self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = client.get(
+            reverse('studyclass-list'),
+            query_filter_data,
+            format='json',
+        )
+        self.assertEqual(len(response.data), 5)
+
+    def test_deactivate_study_class(self):
+
+        client = APIClient()
+        query_filter_data = {'school': '苏杰小学', 'title': '四年级3班'}
+        response = client.get(
+            reverse('studyclass-list'),
+            query_filter_data,
+            format='json',
+        )
+
+        queryset = response.data
+        deactivation_status = {'is_active': False}
+        for query in queryset:
+            id = int(query['id'])
+            response = client.put(
+                reverse('studyclass-detail', kwargs={'pk': id}),
+                deactivation_status,
+                format='json'
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_a_study_class(self):
+
+        client = APIClient()
+        query_filter_data = {'teacher_id': '1'}
+        response = client.get(
+            reverse('studyclass-list'),
+            query_filter_data,
+            format='json',
+        )
+
+        queryset = response.data
+        for query in queryset:
+            id = int(query['id'])
+            response = client.delete(
+                reverse('studyclass-detail', kwargs={'pk': id}),
+                format='json',
+                follow=True
+            )
+            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
