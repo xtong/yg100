@@ -24,7 +24,7 @@ router = DefaultRouter()
 router.register(r'student', views.StudentViewSet)
 router.register(r'parent', views.ParentViewSet)
 router.register(r'teacher', views.TeacherViewSet)
-router.register(r'studyClass', views.StudyClassViewSet)
+router.register(r'studyclass', views.StudyClassViewSet)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),

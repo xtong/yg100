@@ -168,8 +168,6 @@ class StudyClass(models.Model):
     title = models.CharField(blank=True, max_length=64)
     school = models.CharField(blank=True, max_length=128)
     is_active = models.BooleanField(default=True)
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_modified = models.DateTimeField(auto_now=True)
 
     teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE)
     student = models.ForeignKey('Student', on_delete=models.CASCADE)

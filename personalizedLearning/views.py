@@ -43,10 +43,34 @@ class StudyClassViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         # 创建一个缺省的假用户，否则无法创建对应的关系
-        student_sentinel = Student.objects.get_or_create(name='sentinel', birth_date='1975-12-04')
-        # student_serializer = StudentSerializer(instance=student_sentinel[0])
+        try:
+            student_id = self.request.data['student_id']
+        except:
+            student_sentinel = Student.objects.get_or_create(name='sentinel', birth_date='1975-12-04')
+            student_id = student_sentinel[0].id
 
         teacher = Teacher.objects.get(id=self.request.data['teacher_id'])
-        # teacher_serializer = TeacherSerializer(instance=teacher)
 
-        serializer.save(student_id = student_sentinel[0].id, teacher_id = teacher.id)
+        serializer.save(student_id = student_id, teacher_id = teacher.id)
+
+    def get_queryset(self):
+
+        queryset = StudyClass.objects.all()
+        is_active = self.request.query_params.get('is_active', None)
+        school = self.request.query_params.get('school', None)
+        title = self.request.query_params.get('title', None)
+        teacher_id = self.request.query_params.get('teacher_id', None)
+        student_id = self.request.query_params.get('student_id', None)
+
+        if is_active is not None:
+            queryset = queryset.filter(is_active=is_active)
+        if school is not None:
+            queryset = queryset.filter(school=school)
+        if title is not None:
+            queryset = queryset.filter(title=title)
+        if teacher_id is not None:
+            queryset = queryset.filter(teacher_id=teacher_id)
+        if student_id is not None:
+            queryset = queryset.filter(student_id=student_id)
+
+        return queryset

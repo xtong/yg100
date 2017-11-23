@@ -37,7 +37,6 @@ class StudyClassSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = StudyClass
-        fields = ('id', 'title', 'school', 'is_active', 'date_created', 'date_modified', 'teacher_id', 'student_id')
-        # fields = ('id', 'title', 'school', 'is_active', 'teacher_id', 'student', 'date_created', 'date_modified')
+        fields = ('id', 'title', 'school', 'is_active', 'teacher_id', 'student_id')
 
 
