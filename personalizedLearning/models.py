@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 # Create your models here.
 class Parent(models.Model):
 
-    user = models.OneToOneField(User, unique=True, related_name='parent')
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     # name = models.CharField(blank=True, max_length=255)
 
@@ -12,7 +12,7 @@ class Parent(models.Model):
         db_table = 'parent'
 
     def __str__(self):
-        return User.username
+        return self.user.username
 
 class Student(models.Model):
     # 出生地（省）列表
@@ -179,7 +179,7 @@ class StudyClass(models.Model):
         return self.title
 
 class Guardianship(models.Model):
-    child = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     parent = models.ForeignKey(Parent, on_delete=models.CASCADE)
 
     FATHER = 1
@@ -201,4 +201,4 @@ class Guardianship(models.Model):
         db_table = 'guardianship'
 
     def __str__(self):
-        return self.child.objects.all() + '和' + self.parent.objects.all() + '的家'
+        return self.student.objects.all() + '和' + self.parent.objects.all() + '的家'
