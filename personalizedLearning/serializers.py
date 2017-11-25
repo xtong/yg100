@@ -2,6 +2,7 @@ from rest_framework import serializers
 from personalizedLearning.models import Parent
 from personalizedLearning.models import Student
 from personalizedLearning.models import Teacher
+from personalizedLearning.models import CProfile
 from personalizedLearning.models import StudyClass
 from personalizedLearning.models import Guardianship
 from django.contrib.auth.models import User
@@ -28,15 +29,21 @@ class ParentSerializer(serializers.ModelSerializer):
         model = Parent
         fields = '__all__'
 
+class CProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CProfile
+        fields = ('id', 'title', 'school', 'created_date', 'modified_time')
 
 class StudyClassSerializer(serializers.ModelSerializer):
 
+    cprofile_id = serializers.ReadOnlyField(source='cprofile.id')
     teacher_id = serializers.ReadOnlyField(source='teacher.id')
     student_id = serializers.ReadOnlyField(source='student.id')
 
     class Meta:
         model = StudyClass
-        fields = ('id', 'title', 'school', 'is_active', 'teacher_id', 'student_id')
+        fields = ('id', 'cprofile_id', 'is_active', 'teacher_id', 'student_id')
 
 class GuardianshipSerializer(serializers.ModelSerializer):
 

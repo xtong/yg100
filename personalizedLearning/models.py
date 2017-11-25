@@ -164,9 +164,26 @@ class Teacher(models.Model):
     def __str__(self):
         return self.user.username
 
-class StudyClass(models.Model):
+
+class CProfile(models.Model):
+    '''
+    CProfile主要是存储班级代码，用来query或分享扫码加入
+    '''
     title = models.CharField(blank=True, max_length=64)
     school = models.CharField(blank=True, max_length=128)
+
+    created_date = models.DateTimeField(auto_now_add=True)
+    modified_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'cprofile'
+    def __str__(self):
+        return self.title
+
+class StudyClass(models.Model):
+
+    cprofile = models.ForeignKey('CProfile', on_delete=models.CASCADE)
+
     is_active = models.BooleanField(default=True)
 
     teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE)
@@ -176,7 +193,8 @@ class StudyClass(models.Model):
         db_table = 'study_class'
 
     def __str__(self):
-        return self.title
+        return self.cprofile.title
+
 
 class Guardianship(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)

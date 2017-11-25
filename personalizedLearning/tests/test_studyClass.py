@@ -51,8 +51,8 @@ class StudyClassTestCase(TestCase):
             )
 
         study_class_data_list = list()
-        study_class_data_list.append({'title': '四年级2班', 'school': '苏杰小学', 'teacher_id': '1'})
-        study_class_data_list.append({'title': '四年级3班', 'school': '苏杰小学', 'teacher_id': '1'})
+        study_class_data_list.append({'title': '四年级2班', 'school': '苏杰小学', 'teacher_id': '1'}) # id == 1
+        study_class_data_list.append({'title': '四年级3班', 'school': '苏杰小学', 'teacher_id': '2'}) # id == 2
 
         for data in study_class_data_list:
             self.response = self.client.post(
@@ -64,7 +64,7 @@ class StudyClassTestCase(TestCase):
     def test_create_a_study_class(self):
 
         client = APIClient()
-        study_class_data = {'title': '四年级2班', 'school': '苏杰小学', 'teacher_id': '1'}
+        study_class_data = {'title': '四年级2班', 'school': '苏杰小学', 'teacher_id': '3'}
         response = client.post(
             reverse('studyclass-list'),
             study_class_data,
@@ -83,7 +83,7 @@ class StudyClassTestCase(TestCase):
         student_id_list.append({'student_id': '4'})
         student_id_list.append({'student_id': '5'})
 
-        query_filter_data = {'school':'苏杰小学', 'title':'四年级2班'}
+        query_filter_data = {'cprofile_id': '1'}
         response = client.get(
             reverse('studyclass-list'),
             query_filter_data,
@@ -94,11 +94,12 @@ class StudyClassTestCase(TestCase):
         for query in queryset:
 
             study_class_data = {'teacher_id': query['teacher_id'],
-                                'student_id': '1',
-                                'title': query['title'],
-                                'school': query['school'],
+                                'student_id': query['student_id'],
+                                'cprofile_id': query['cprofile_id'],
                                 'is_active': query['is_active']}
             for student_id in student_id_list:
+                if str(query['student_id']) == str(student_id['student_id']):
+                    continue
                 study_class_data['student_id'] = student_id['student_id']
                 response = client.post(
                     reverse('studyclass-list'),
@@ -118,13 +119,13 @@ class StudyClassTestCase(TestCase):
         client = APIClient()
 
         teacher_id_list = list()
-        # 1 is reserved for sentinel student when initializing a study class
+        # 去除重复的老师, 需要在前端或SDK中去重
         teacher_id_list.append({'teacher_id': '1'})
         teacher_id_list.append({'teacher_id': '2'})
         teacher_id_list.append({'teacher_id': '3'})
         teacher_id_list.append({'teacher_id': '4'})
 
-        query_filter_data = {'school': '苏杰小学', 'title': '四年级2班'}
+        query_filter_data = {'cprofile_id': '2'}
         response = client.get(
             reverse('studyclass-list'),
             query_filter_data,
@@ -133,13 +134,15 @@ class StudyClassTestCase(TestCase):
 
         queryset = response.data
         for query in queryset:
-
-            teacher_class_data = {'teacher_id': '1',
+            teacher_class_data = {'teacher_id': query['teacher_id'],
                                 'student_id': query['student_id'],
-                                'title': query['title'],
-                                'school': query['school'],
+                                'cprofile_id': query['cprofile_id'],
                                 'is_active': query['is_active']}
             for teacher_id in teacher_id_list:
+
+                if str(query['teacher_id']) == str(teacher_id['teacher_id']):
+                    continue
+
                 teacher_class_data['teacher_id'] = teacher_id['teacher_id']
                 response = client.post(
                     reverse('studyclass-list'),
@@ -152,12 +155,12 @@ class StudyClassTestCase(TestCase):
             query_filter_data,
             format='json',
         )
-        self.assertEqual(len(response.data), 5)
+        self.assertEqual(len(response.data), 4)
 
     def test_deactivate_study_class(self):
 
         client = APIClient()
-        query_filter_data = {'school': '苏杰小学', 'title': '四年级3班'}
+        query_filter_data = {'class_id': '2'}
         response = client.get(
             reverse('studyclass-list'),
             query_filter_data,
@@ -178,7 +181,7 @@ class StudyClassTestCase(TestCase):
     def test_delete_a_study_class(self):
 
         client = APIClient()
-        query_filter_data = {'teacher_id': '1'}
+        query_filter_data = {'class_id': '1'}
         response = client.get(
             reverse('studyclass-list'),
             query_filter_data,

@@ -1,9 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import viewsets
-from rest_framework import generics
-from rest_framework import permissions
-from rest_framework.decorators import list_route
 from personalizedLearning.permissions import UserPermission
 from personalizedLearning.models import Student
 from personalizedLearning.serializers import StudentSerializer
@@ -11,6 +8,8 @@ from personalizedLearning.models import Parent
 from personalizedLearning.serializers import ParentSerializer
 from personalizedLearning.models import Teacher
 from personalizedLearning.serializers import TeacherSerializer
+from personalizedLearning.models import CProfile
+from personalizedLearning.serializers import CProfileSerializer
 from personalizedLearning.models import StudyClass
 from personalizedLearning.serializers import StudyClassSerializer
 from personalizedLearning.models import Guardianship
@@ -46,12 +45,24 @@ class TeacherViewSet(viewsets.ModelViewSet):
                                         email=self.request.data['email'])
         serializer.save(user=user)
 
+class CProfileViewSet(viewsets.ModelViewSet):
+
+    queryset = CProfile.objects.all()
+    serializer_class = CProfileSerializer
+
 class StudyClassViewSet(viewsets.ModelViewSet):
 
     queryset = StudyClass.objects.all()
     serializer_class = StudyClassSerializer
 
     def perform_create(self, serializer):
+        try:
+            cprofile_id = self.request.data['cprofile_id']
+        except:
+            cprofile = CProfile.objects.create(title=self.request.data['title'],
+                                                        school=self.request.data['school'])
+            cprofile_id = cprofile.id
+
         # 创建一个缺省的假用户，否则无法创建对应的关系
         try:
             student_id = self.request.data['student_id']
@@ -61,23 +72,20 @@ class StudyClassViewSet(viewsets.ModelViewSet):
 
         teacher = Teacher.objects.get(id=self.request.data['teacher_id'])
 
-        serializer.save(student_id = student_id, teacher_id = teacher.id)
+        serializer.save(student_id = student_id, teacher_id = teacher.id, cprofile_id=cprofile_id)
 
     def get_queryset(self):
 
         self.queryset = StudyClass.objects.all()
         is_active = self.request.query_params.get('is_active', None)
-        school = self.request.query_params.get('school', None)
-        title = self.request.query_params.get('title', None)
+        cprofile_id = self.request.query_params.get('cprofile_id', None)
         teacher_id = self.request.query_params.get('teacher_id', None)
         student_id = self.request.query_params.get('student_id', None)
 
         if is_active is not None:
             self.queryset = self.queryset.filter(is_active=is_active)
-        if school is not None:
-            self.queryset = self.queryset.filter(school=school)
-        if title is not None:
-            self.queryset = self.queryset.filter(title=title)
+        if cprofile_id is not None:
+            self.queryset = self.queryset.filter(cprofile_id=cprofile_id)
         if teacher_id is not None:
             self.queryset = self.queryset.filter(teacher_id=teacher_id)
         if student_id is not None:
