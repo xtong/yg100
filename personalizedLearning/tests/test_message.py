@@ -6,7 +6,7 @@ from personalizedLearning.models import Teacher
 from personalizedLearning.models import Student
 from personalizedLearning.tests.utils import YGTestUtils
 
-class StudyClassTestCase(TestCase):
+class BaseMessageTestCase(TestCase):
 
     def setUp(self):
 
@@ -62,21 +62,6 @@ class StudyClassTestCase(TestCase):
                 format='json'
             )
 
-    def test_create_a_study_class(self):
-
-        client = APIClient()
-        study_class_data = {'title': '四年级2班', 'school': '苏杰小学', 'teacher_id': '3'}
-        response = client.post(
-            reverse('studyclass-list'),
-            study_class_data,
-            format='json',
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-    def test_add_new_students(self):
-
-        client = APIClient()
-
         student_id_list = list()
         # 1 is reserved for sentinel student when initializing a study class
         student_id_list.append({'student_id': '2'})
@@ -85,13 +70,12 @@ class StudyClassTestCase(TestCase):
         student_id_list.append({'student_id': '5'})
 
         query_filter_data = {'cprofile_id': '1'}
-        response = client.get(
+        self.response = self.client.get(
             reverse('studyclass-list'),
             query_filter_data,
             format='json'
         )
-
-        queryset = response.data
+        queryset = self.response.data
         for query in queryset:
 
             study_class_data = {'teacher_id': query['teacher_id'],
@@ -102,31 +86,51 @@ class StudyClassTestCase(TestCase):
                 if str(query['student_id']) == str(student_id['student_id']):
                     continue
                 study_class_data['student_id'] = student_id['student_id']
-                response = client.post(
+                self.response = self.client.post(
                     reverse('studyclass-list'),
                     study_class_data,
                     format='json'
                 )
-                self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        response = client.get(
+
+        message_data = {
+            'teacher_id': '1',
+            'student_id': '1',
+            'title': '学校通知',
+            'image': 'http://www.baidu.com',
+            'text': '紫霞湖秋游',
+        }
+
+        query_filter_data = {'cprofile_id': '1'}
+        self.response = self.client.get(
             reverse('studyclass-list'),
             query_filter_data,
-            format='json',
+            format='json'
         )
-        self.assertEqual(len(response.data), 5)
 
-    def test_add_new_teachers(self):
+        queryset = self.response.data
+        for student in queryset:
+
+            message_data['student_id'] = student['student_id']
+
+            response = self.client.post(
+                reverse('basemessage-list'),
+                message_data,
+                format='json',
+            )
+
+    def test_create_base_message(self):
 
         client = APIClient()
 
-        teacher_id_list = list()
-        # 去除重复的老师, 需要在前端或SDK中去重
-        teacher_id_list.append({'teacher_id': '1'})
-        teacher_id_list.append({'teacher_id': '2'})
-        teacher_id_list.append({'teacher_id': '3'})
-        teacher_id_list.append({'teacher_id': '4'})
+        message_data = {
+            'teacher_id': '1',
+            'student_id': '1',
+            'title': '学校演讲周通知',
+            'image': 'http://www.baidu.com',
+            'text': '演讲周',
+        }
 
-        query_filter_data = {'cprofile_id': '2'}
+        query_filter_data = {'cprofile_id': '1'}
         response = client.get(
             reverse('studyclass-list'),
             query_filter_data,
@@ -134,67 +138,27 @@ class StudyClassTestCase(TestCase):
         )
 
         queryset = response.data
-        for query in queryset:
-            teacher_class_data = {'teacher_id': query['teacher_id'],
-                                'student_id': query['student_id'],
-                                'cprofile_id': query['cprofile_id'],
-                                'is_active': query['is_active']}
-            for teacher_id in teacher_id_list:
+        for student in queryset:
 
-                if str(query['teacher_id']) == str(teacher_id['teacher_id']):
-                    continue
+            message_data['student_id'] = student['student_id']
 
-                teacher_class_data['teacher_id'] = teacher_id['teacher_id']
-                response = client.post(
-                    reverse('studyclass-list'),
-                    teacher_class_data,
-                    format='json'
-                )
-                self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        response = client.get(
-            reverse('studyclass-list'),
-            query_filter_data,
-            format='json',
-        )
-        self.assertEqual(len(response.data), 4)
-
-    def test_deactivate_study_class(self):
-
-        client = APIClient()
-        query_filter_data = {'class_id': '2'}
-        response = client.get(
-            reverse('studyclass-list'),
-            query_filter_data,
-            format='json',
-        )
-
-        queryset = response.data
-        deactivation_status = {'is_active': False}
-        for query in queryset:
-            id = int(query['id'])
-            response = client.put(
-                reverse('studyclass-detail', kwargs={'pk': id}),
-                deactivation_status,
-                format='json'
-            )
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_delete_a_study_class(self):
-
-        client = APIClient()
-        query_filter_data = {'class_id': '1'}
-        response = client.get(
-            reverse('studyclass-list'),
-            query_filter_data,
-            format='json',
-        )
-
-        queryset = response.data
-        for query in queryset:
-            id = int(query['id'])
-            response = client.delete(
-                reverse('studyclass-detail', kwargs={'pk': id}),
+            response = client.post(
+                reverse('basemessage-list'),
+                message_data,
                 format='json',
-                follow=True
             )
-            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_message(self):
+
+        client = APIClient()
+
+        query_filter_data = {'student_id': 2}
+        response = client.get(
+            reverse('basemessage-list'),
+            query_filter_data,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)

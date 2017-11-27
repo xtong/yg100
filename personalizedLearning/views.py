@@ -14,6 +14,8 @@ from personalizedLearning.models import StudyClass
 from personalizedLearning.serializers import StudyClassSerializer
 from personalizedLearning.models import Guardianship
 from personalizedLearning.serializers import GuardianshipSerializer
+from personalizedLearning.models import BaseMessage
+from personalizedLearning.serializers import BaseMessageSerializer
 
 # Create your views here.
 class StudentViewSet(viewsets.ModelViewSet):
@@ -56,6 +58,7 @@ class StudyClassViewSet(viewsets.ModelViewSet):
     serializer_class = StudyClassSerializer
 
     def perform_create(self, serializer):
+
         try:
             cprofile_id = self.request.data['cprofile_id']
         except:
@@ -76,7 +79,6 @@ class StudyClassViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
 
-        self.queryset = StudyClass.objects.all()
         is_active = self.request.query_params.get('is_active', None)
         cprofile_id = self.request.query_params.get('cprofile_id', None)
         teacher_id = self.request.query_params.get('teacher_id', None)
@@ -117,6 +119,32 @@ class GuardianViewSet(viewsets.ModelViewSet):
 
         if parent_id is not None:
             self.queryset = self.queryset.filter(parent_id=parent_id)
+        if student_id is not None:
+            self.queryset = self.queryset.filter(student_id=student_id)
+
+        return self.queryset
+
+class BaseMessageViewSet(viewsets.ModelViewSet):
+
+    queryset = BaseMessage.objects.all()
+    serializer_class = BaseMessageSerializer
+
+    def perform_create(self, serializer):
+
+        teacher = Teacher.objects.get(id=self.request.data['teacher_id'])
+        student = Student.objects.get(id=self.request.data['student_id'])
+
+        serializer.save(teacher_id=teacher.id, student_id=student.id)
+
+    def get_queryset(self):
+        is_active = self.request.query_params.get('is_active', None)
+        teacher_id = self.request.query_params.get('teacher_id', None)
+        student_id = self.request.query_params.get('student_id', None)
+
+        if is_active is not None:
+            self.queryset = self.queryset.filter(is_active=is_active)
+        if teacher_id is not None:
+            self.queryset = self.queryset.filter(teacher_id=teacher_id)
         if student_id is not None:
             self.queryset = self.queryset.filter(student_id=student_id)
 

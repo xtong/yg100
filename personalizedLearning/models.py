@@ -164,7 +164,6 @@ class Teacher(models.Model):
     def __str__(self):
         return self.user.username
 
-
 class CProfile(models.Model):
     '''
     CProfile主要是存储班级代码，用来query或分享扫码加入
@@ -177,6 +176,7 @@ class CProfile(models.Model):
 
     class Meta:
         db_table = 'cprofile'
+
     def __str__(self):
         return self.title
 
@@ -194,7 +194,6 @@ class StudyClass(models.Model):
 
     def __str__(self):
         return self.cprofile.title
-
 
 class Guardianship(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -220,3 +219,22 @@ class Guardianship(models.Model):
 
     def __str__(self):
         return self.student.objects.all() + '和' + self.parent.objects.all() + '的家'
+
+class BaseMessage(models.Model):
+
+    title = models.CharField(blank=False, max_length=64)
+    image = models.URLField(blank=True)
+    text = models.CharField(blank=True, max_length=256)
+    created_date = models.DateTimeField(auto_now_add=True)
+    modified_date = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    is_read = models.BooleanField(default=False)
+
+    teacher = models.ForeignKey('Teacher')
+    student = models.ForeignKey('Student')
+
+    class Meta:
+        db_table = 'basemessage'
+
+    def __str__(self):
+        return self.title

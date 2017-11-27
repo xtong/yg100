@@ -5,7 +5,7 @@ from personalizedLearning.models import Teacher
 from personalizedLearning.models import CProfile
 from personalizedLearning.models import StudyClass
 from personalizedLearning.models import Guardianship
-from django.contrib.auth.models import User
+from personalizedLearning.models import BaseMessage
 
 class StudentSerializer(serializers.ModelSerializer):
 
@@ -53,3 +53,13 @@ class GuardianshipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Guardianship
         fields = ('id', 'relationship', 'parent_id', 'student_id')
+
+class BaseMessageSerializer(serializers.ModelSerializer):
+
+    teacher_id = serializers.ReadOnlyField(source='teacher.id')
+    student_id = serializers.ReadOnlyField(source='student.id')
+
+    class Meta:
+        model = BaseMessage
+        fields = ('id', 'title', 'image', 'text', 'teacher_id', 'student_id',
+                  'created_date', 'modified_date', 'is_active', 'is_read')

@@ -26,6 +26,7 @@ router.register(r'parent', views.ParentViewSet)
 router.register(r'teacher', views.TeacherViewSet)
 router.register(r'studyclass', views.StudyClassViewSet)
 router.register(r'guardianship', views.GuardianViewSet)
+router.register(r'basemessage', views.BaseMessageViewSet)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
